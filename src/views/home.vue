@@ -23,7 +23,7 @@ const stripHtml = (html) => {
 
 onMounted(async () => {
   try {
-    const res = await fetch('/video/api.php/provide/vod/?ac=detail')
+    const res = await fetch('/api/proxy?ac=detail')
     const data = await res.json()
 
     videoList.value = data.list

@@ -23,11 +23,11 @@ export default defineConfig({
     open: true,
     port: 3331,
     proxy: {
-      '/video': {
+      '/api/proxy': {
         target: 'https://cj.rycjapi.com',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/video/, '')
+        rewrite: (path) => path.replace(/^\/api\/proxy/, '/api.php/provide/vod/')
       }
     }
   },

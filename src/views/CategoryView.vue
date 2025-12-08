@@ -39,7 +39,7 @@ const fetchCategories = async (id = '') => {
     typePid.value = id || route.params.id
     console.log('typePid.value', typePid.value)
 
-    const res = await fetch('/video/api.php/provide/vod/?ac=list')
+    const res = await fetch('/api/proxy?ac=list')
     const data = await res.json()
     categoryList.value = data.class.filter(item => item.type_pid == typePid.value) || []
     updateCurrentCategoryInfo()
@@ -53,7 +53,7 @@ const fetchVideos = async (page = 1) => {
   loading.value = true
   try {
     // 构造请求：t=分类ID, pg=页码
-    const res = await fetch(`/video/api.php/provide/vod/?ac=detail&t=${curTypeId.value}&pg=${page}`)
+    const res = await fetch(`/api/proxy?ac=detail&t=${curTypeId.value}&pg=${page}`)
     const data = await res.json()
 
     videoList.value = data.list || []

@@ -18,7 +18,7 @@ let hls = null // Hls.js 实例
 
 // --- 核心逻辑 1: 获取并解析数据 ---
 const fetchVideoDetail = async () => {
-  const res = await fetch(`/video/api.php/provide/vod/?ac=detail&ids=${route.params.id}`)
+  const res = await fetch(`/api/proxy?ac=detail&ids=${route.params.id}`)
   const data = await res.json()
   videoDetail.value = data?.list[0] || {}
   await nextTick()

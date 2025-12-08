@@ -22,7 +22,7 @@ const doSearch = async (keyword) => {
 
   try {
     // 接口参数：ac=detail & wd=关键词
-    const res = await fetch(`/video/api.php/provide/vod/?ac=detail&wd=${encodeURIComponent(keyword)}`)
+    const res = await fetch(`/api/proxy?ac=detail&wd=${encodeURIComponent(keyword)}`)
     const data = await res.json()
 
     list.value = data.list || []
