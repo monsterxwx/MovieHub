@@ -1,117 +1,154 @@
-
----
-
-# 📦 PrivacyBox - 隐私优先的极客工具箱
+# 🎬 MovieHub
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Vue-3.0+-4FC08D?style=flat-square&logo=vue.js" alt="Vue 3" />
-  <img src="https://img.shields.io/badge/Vite-Rapid-646CFF?style=flat-square&logo=vite" alt="Vite" />
-  <img src="https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=flat-square&logo=tailwind-css" alt="Tailwind" />
+  <img src="https://img.shields.io/badge/Vue.js-3.x-4FC08D?style=flat-square&logo=vue.js" alt="Vue 3" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-3.0-38B2AC?style=flat-square&logo=tailwind-css" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/Vite-5.x-646CFF?style=flat-square&logo=vite" alt="Vite" />
+  <img src="https://img.shields.io/badge/ArtPlayer-HLS-9333EA?style=flat-square" alt="ArtPlayer" />
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="License" />
-  <img src="https://img.shields.io/badge/Privacy-100%25-red?style=flat-square" alt="Privacy" />
 </p>
 
-> **你的数据，理应只属于你自己。**
-> 
-> Your data belongs to you, and only you.
+<p align="center">
+  <strong>一个基于 Vue 3 + Tailwind CSS 打造的现代化、沉浸式影视聚合前端项目。</strong>
+</p>
 
-**PrivacyBox** 是一个基于现代 Web 技术（Vue 3 + WebAssembly）构建的纯前端工具集合。与传统在线工具不同，本项目的核心理念是 **"Serverless & Local-First"** —— 所有文件处理逻辑（PDF合并、图片压缩、水印等）均在用户的浏览器本地完成，**绝不上传任何文件到服务器**。
+<p align="center">
+  <a href="#-功能特性">功能特性</a> •
+  <a href="#-快速开始">快速开始</a> •
+  <a href="#-配置指南">配置指南</a> •
+  <a href="#-项目截图">项目截图</a> •
+  <a href="#-免责声明">免责声明</a>
+</p>
 
-安全、免费、极速、美观。
+---
 
-## ✨ 核心亮点 (Key Features)
+## 📖 项目介绍
 
-- 🛡️ **极致隐私**：利用浏览器算力处理文件，断网可用，杜绝隐私泄露风险。
-- ⚡ **极速体验**：基于 Vite 构建，无上传下载等待时间，大文件秒级处理。
-- 🎨 **现代设计**：采用流光背景 + 磨砂玻璃 (Glassmorphism) 的 UI 设计语言。
-- 📦 **纯前端架构**：无需后端数据库，部署简单（支持 GitHub Pages / Vercel）。
+MovieHub 是一个纯前端实现的影视数据展示与播放平台。它采用了最新的 **Vue 3 (Script Setup)** 技术栈，配合 **Tailwind CSS** 实现了高度响应式的暗黑模式 UI。
 
-## 🛠️ 功能列表 (Tools)
+本项目**不存储任何视频资源**，它通过对接符合通用 CMS 标准（如苹果CMS、Maccms）的 JSON 采集接口来获取数据，旨在提供比传统模板更优雅、更流畅的用户体验。
 
-### 📄 PDF 工具箱
-- **PDF 合并**：将多个 PDF 文件按顺序合并。
-- **PDF 拆分**：将 PDF 的每一页拆分为独立文件（ZIP 打包下载）。
-- **图片转 PDF**：将 JPG/PNG 图片合并导出为 A4 格式 PDF。
+## ✨ 功能特性
 
-### 🖼️ 图片影像处理
-- **隐私水印卫士**：为证件/照片添加全屏防盗盲水印（支持调节密度、透明度、旋转）。
-- **图片智能压缩**：基于 Canvas 算法，肉眼无损级压缩，支持批量打包。
-- **格式转换工场**：WebP / PNG / JPEG 格式互转。
-- **条形码生成器**：生成矢量条形码（Code128, EAN, UPC），支持 SVG/PNG 导出。
-- **二维码美化**：生成个性化二维码，支持自定义颜色、嵌入 Logo 图标，高清导出。
-- **极简屏幕录制**：无需安装软件，支持系统声音+麦克风混录，画中画预览，本地导出。
-...
+*   **🎨 沉浸式 UI 设计**：
+    *   全站暗黑模式，灵感来源于 Netflix / Apple TV。
+    *   首页巨幕海报，支持移动端沉浸式底图融合效果。
+    *   精美的毛玻璃（Glassmorphism）导航栏与组件。
+*   **📱 完美响应式适配**：
+    *   PC 端：多列网格布局，悬浮交互。
+    *   移动端：独立的汉堡菜单、底部操作栏、触屏优化的横向滚动条。
+*   **⚡️ 极速体验**：
+    *   基于 Vite 构建，毫秒级热更新。
+    *   组件懒加载，骨架屏（Skeleton）加载占位，拒绝白屏闪烁。
+*   **🎥 强大的播放器**：
+    *   集成 **ArtPlayer**，界面美观，功能强大。
+    *   原生支持 **HLS (m3u8)** 流媒体播放。
+    *   支持倍速播放、画中画（PIP）、网页全屏、截图、画面比例切换。
+    *   支持多播放源（线路）自动解析与切换。
+    *   支持选集列表自动定位当前集数。
+*   **🔍 搜索与分类**：
+    *   支持关键词联想搜索，拥有独立的搜索结果页。
+    *   分类页支持横向滚动筛选，鼠标滚轮自动映射为横向滑动。
+    *   完整的分页逻辑。
 
-### 💻 开发者工具
-- **JSON 格式化**：语法高亮、错误校验、压缩与美化。
-正则测试、Diff 对比...
+## 🛠️ 技术栈
 
-还有很多内容自行预览体验
+*   **核心框架**: [Vue 3](https://vuejs.org/) (Composition API)
+*   **构建工具**: [Vite](https://vitejs.dev/)
+*   **样式库**: [Tailwind CSS](https://tailwindcss.com/)
+*   **路由管理**: [Vue Router 4](https://router.vuejs.org/)
+*   **图标库**: [Lucide Vue Next](https://lucide.dev/)
+*   **视频播放**: [ArtPlayer](https://artplayer.org/) + [Hls.js](https://github.com/video-dev/hls.js/)
 
-## 📸 预览地址
+## 🚀 快速开始
 
-https://monsterxwx.github.io/PrivacyBox/
-
-
-## 🚀 快速开始 (Getting Started)
-
-### 环境要求
-- Node.js >= 16.0
-
-### 本地运行
+### 1. 克隆项目
 
 ```bash
-# 1. 克隆项目
-git clone https://github.com/your-username/privacy-box.git
-
-# 2. 进入目录
-cd privacy-box
-
-# 3. 安装依赖
-pnpm i
-
-# 4. 启动开发服务器
-pnpm  dev
+git clone https://github.com/你的用户名/moviehub.git
+cd moviehub
 ```
 
-### 部署
-由于是纯静态项目，你可以轻松部署到任何静态托管服务：
+### 2. 安装依赖
+
+推荐使用 pnpm
 
 ```bash
-# 构建生产环境代码
+pnpm install
+```
+
+### 3. 配置接口代理
+
+由于浏览器的 CORS（跨域）限制，在本地开发时需要在 `vite.config.js` 中配置代理。
+请找到 `server.proxy` 部分，将 `target` 修改为你想要对接的采集站地址。
+
+```javascript
+// vite.config.js
+export default defineConfig({
+  // ...
+  server: {
+    proxy: {
+      '/video': {
+        target: 'https://cj.rycjapi.com', // <--- 修改这里为你找的采集源
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/video/, '')
+      }
+    }
+  }
+})
+```
+
+### 4. 启动开发服务器
+
+```bash
+pnpm dev
+```
+
+访问 `http://localhost:3331` 即可看到效果。
+
+
+## ⚙️ 部署上线
+
+### 构建
+
+```bash
 pnpm build
 ```
-构建产物位于 `dist` 目录。
 
-## ⚙️ 技术栈 (Tech Stack)
+构建完成后，`docs` 目录下的文件即为静态资源。
 
-- **框架**: [Vue 3](https://vuejs.org/) (Composition API)
-- **构建**: [Vite](https://vitejs.dev/)
-- **样式**: [Unocss](https://unocss.com/)
-- **核心库**:
-  - `pdf-lib` / `jspdf`: PDF 生成与操作
-  - `jsbarcode`: 条形码生成
-  - `jszip`: 文件打包下载
-  - `file-saver`: 文件保存
+### 关于生产环境跨域
 
-## 🤝 贡献指南 (Contributing)
+本项目是纯前端项目。如果你的采集源接口**不支持跨域 (No Access-Control-Allow-Origin)**，你需要部署一个轻量级的 Nginx 反向代理或使用 Vercel/Netlify 的 Serverless Functions 来转发请求。
 
-非常欢迎各种形式的贡献！无论是新功能的 Idea、Bug 反馈还是 PR。
+**Nginx 配置示例：**
 
-1. Fork 本仓库
-2. 创建你的 Feature 分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交你的修改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启一个 Pull Request
+```nginx
+location /video/ {
+    proxy_pass https://cj.rycjapi.com/; # 你的采集源地址
+    proxy_ssl_server_name on;
+}
+```
+
+## 🤝 贡献指南
+
+欢迎提交 Issue 或 Pull Request！如果你有更好的 UI 想法或功能建议，请随时告诉我。
+
+1.  Fork 本仓库
+2.  新建 Feat_xxx 分支
+3.  提交代码
+4.  新建 Pull Request
+
+## ⚠️ 免责声明 (Disclaimer)
+
+1.  **仅供学习交流**：本项目主要用于 Vue 3 和 Tailwind CSS 的技术研究与学习，**不得用于任何商业用途**。
+2.  **资源来源**：本项目不生产、不存储、不传播任何视频文件。所有数据均来源于互联网公开的第三方采集接口（CMS API）。
+3.  **版权风险**：开发者不对任何通过本项目获取的第三方内容的合法性、准确性或版权合规性负责。请使用者在使用前自行核实资源来源的合法性。
+4.  **法律责任**：使用者利用本项目从事的任何违法违规行为（包括但不限于传播盗版侵权内容），由使用者自行承担全部法律责任，与本项目开发者无关。
+
+## 📄 License
+
+MIT License © 2025 MovieHub
 
 
-## 📄 开源协议 (License)
-
-本项目基于 [MIT License](LICENSE) 开源。
-
----
-
-<p align="center">Made with ❤️ by <b>Monster</b></p>
-
----
 
