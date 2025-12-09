@@ -27,19 +27,46 @@ const fetchVideoDetail = async () => {
 
 // --- 核心逻辑 2: 解析播放地址字符串 ---
 const parsePlayUrl = (playFrom, playUrl) => {
-  // 1. 分割源名称 ["rym3u8", "ruyi"]
-  const sourceNames = playFrom.split('$$$')
-  // 2. 分割源数据 [ "第一组数据...", "第二组数据..." ]
-  const sourceData = playUrl.split('$$$')
+  // 处理空值情况
+  if (!playFrom || !playUrl) {
+    playSources.value = []
+    return
+  }
+
+  // 1. 分割源名称，如果没有$$$分隔符则作为单个源处理
+  const sourceNames = playFrom.includes('$$$') ? playFrom.split('$$$') : [playFrom]
+  // 2. 分割源数据，如果没有$$$分隔符则作为单个源数据
+  const sourceData = playUrl.includes('$$$') ? playUrl.split('$$$') : [playUrl]
 
   const result = sourceNames.map((name, index) => {
     const rawEpisodes = sourceData[index] || '' // 防止数组越界
-    // 3. 分割集数
-    const episodes = rawEpisodes.split('#').map((epStr) => {
-      // 4. 分割 "第01集" 和 "URL"
-      const [epName, epUrl] = epStr.split('$')
-      return { name: epName, url: epUrl }
-    })
+
+    // 3. 分割集数，如果没有#分隔符则作为单集处理
+    let episodes = []
+
+    if (rawEpisodes.includes('#')) {
+      // 正常多集情况
+      episodes = rawEpisodes.split('#').map((epStr) => {
+        if (epStr.includes('$')) {
+          // 正常的 "第01集$URL" 格式
+          const [epName, epUrl] = epStr.split('$')
+          return { name: epName, url: epUrl }
+        } else {
+          // 只有URL，没有集数名稱，使用默认名称
+          return { name: `第${episodes.length + 1}集`, url: epStr }
+        }
+      })
+    } else {
+      // 单集情况
+      if (rawEpisodes.includes('$')) {
+        // "第01集$URL" 格式
+        const [epName, epUrl] = rawEpisodes.split('$')
+        episodes = [{ name: epName, url: epUrl }]
+      } else {
+        // 只有URL，使用默认名称
+        episodes = [{ name: '正片', url: rawEpisodes }]
+      }
+    }
 
     return {
       name, // 源名称
