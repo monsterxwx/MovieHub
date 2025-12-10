@@ -6,6 +6,28 @@ import { ref, watch } from 'vue'
 const router = useRouter()
 const route = useRoute()
 
+// 菜单配置
+const menuItems = ref([])
+
+const fetchCategories = async () => {
+  try {
+    const res = await fetch('/api/proxy?ac=list')
+    const data = await res.json()
+    const cData = data.class.filter(item => item.type_pid == 0) || []
+    // 自定义过滤名称
+    const diyName = ['电影解说', '体育']
+    const filterData = cData.filter(item => !diyName.includes(item.type_name)) || []
+    console.log('data', filterData)
+    menuItems.value = [{ name: '首页', path: '/home' }, ...filterData.map(item => ({
+      name: item.type_name,
+      path: `/category/${item.type_id}`,
+      key: item.type_id
+    }))]
+  } catch (e) {
+    console.error('获取分类失败', e)
+  }
+}
+fetchCategories()
 // 状态：移动端菜单是否打开
 const isMobileMenuOpen = ref(false)
 const searchKeyword = ref('')
@@ -21,15 +43,6 @@ const handleSearch = () => {
   router.push({ path: '/search', query: { q: searchKeyword.value } })
   isMobileMenuOpen.value = false // 搜索后关闭菜单
 }
-
-// 菜单配置
-const menuItems = [
-  { name: '首页', path: '/home' },
-  { name: '电影', path: '/category/1', key: '1' },
-  { name: '剧集', path: '/category/2', key: '2' },
-  { name: '综艺', path: '/category/3', key: '3' },
-  { name: '动漫', path: '/category/4', key: '4' }
-]
 
 const gobackHome = () => {
   router.push('/')
