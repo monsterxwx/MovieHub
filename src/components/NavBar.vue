@@ -2,15 +2,18 @@
 import { useRoute, useRouter } from 'vue-router'
 import { Search, Clapperboard, Menu, X } from 'lucide-vue-next' // 引入 Menu 和 X 图标
 import { ref, watch } from 'vue'
+import useProjectStore from '@/stores/project'
 
 const router = useRouter()
 const route = useRoute()
 
 // 菜单配置
-const menuItems = ref([])
+
+const project = useProjectStore()
 
 const fetchCategories = async () => {
   try {
+    if (project.menuList.length > 1) return
     const res = await fetch('/api/proxy?ac=list')
     const data = await res.json()
     const cData = data.class.filter(item => item.type_pid == 0) || []
@@ -18,7 +21,7 @@ const fetchCategories = async () => {
     const diyName = ['电影解说', '体育']
     const filterData = cData.filter(item => !diyName.includes(item.type_name)) || []
     console.log('data', filterData)
-    menuItems.value = [{ name: '首页', path: '/home' }, ...filterData.map(item => ({
+    project.menuList = [{ name: '首页', path: '/home' }, ...filterData.map(item => ({
       name: item.type_name,
       path: `/category/${item.type_id}`,
       key: item.type_id
@@ -84,7 +87,7 @@ watch(() => route.path, () => {
       <!-- 2. PC端 菜单 (大屏显示) -->
       <div class="hidden md:flex items-center gap-2">
         <router-link
-          v-for="item in menuItems"
+          v-for="item in project.menuList"
           :key="item.path"
           :to="item.path"
           @click="changeType(item.key || '')"
@@ -165,7 +168,7 @@ watch(() => route.path, () => {
         <!-- 移动端导航链接 -->
         <div class="flex flex-col space-y-2">
           <router-link
-            v-for="item in menuItems"
+            v-for="item in project.menuList"
             :key="item.path"
             :to="item.path"
             @click="changeType(item.key || '')"

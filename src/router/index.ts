@@ -20,7 +20,10 @@ const router = createRouter({
     {
       path: '/category/:id',
       name: 'category',
-      component: () => import('@/views/CategoryView.vue')
+      component: () => import('@/views/CategoryView.vue'),
+      meta: {
+        keepAlive: true // 启用缓存
+      }
     },
     {
       path: '/search',
@@ -28,8 +31,11 @@ const router = createRouter({
       component: () => import('@/views/SearchView.vue')
     }
   ],
-  // 切换路由时自动滚动到顶部
-  scrollBehavior () {
+  // 移除自动滚动到顶部，由组件自己控制滚动位置
+  scrollBehavior (to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    }
     return { top: 0 }
   }
 })

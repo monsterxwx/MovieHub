@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, nextTick, onActivated, onDeactivated } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
 import VideoCard from '@/components/VideoCard.vue'
@@ -32,6 +32,9 @@ const pagination = ref({
   pagecount: 1, // 总页数
   total: 0 // 总条数
 })
+
+// --- 滚动位置缓存 ---
+const scrollPosition = ref(0) // 保存滚动位置
 
 // --- 核心：获取所有分类 (用于顶部导航) ---
 const fetchCategories = async (id = '') => {
@@ -87,23 +90,53 @@ const changePage = (newPage) => {
   fetchVideos(newPage)
   // 翻页后滚动到顶部
   window.scrollTo({ top: 0, behavior: 'smooth' })
+  // 重置滚动位置缓存
+  scrollPosition.value = 0
 }
 
 // --- 交互：切换分类 ---
 const changeType = (id) => {
   curTypeId.value = id
   fetchVideos(1) // 切换分类后重置回第一页
+  // 重置滚动位置缓存
+  scrollPosition.value = 0
 }
 
 // --- 交互：跳转详情 ---
 const goToDetail = (id) => {
+  // 保存当前滚动位置
+  scrollPosition.value = window.scrollY
+  console.log('Going to detail, saved scroll position:', scrollPosition.value)
   router.push(`/player/${id}`)
+}
+
+// --- 保存滚动位置 ---
+const saveScrollPosition = () => {
+  scrollPosition.value = window.scrollY
 }
 
 // --- 生命周期 ---
 onMounted(async () => {
   await fetchCategories() // 先获取分类菜单
   fetchVideos(1) // 再获取第一页数据
+})
+
+onActivated(() => {
+  console.log('CategoryView activated, current scroll position:', scrollPosition.value)
+  // 如果已经有数据，直接恢复滚动位置
+  if (videoList.value.length > 0) {
+    nextTick(() => {
+      if (scrollPosition.value > 0) {
+        window.scrollTo(0, scrollPosition.value)
+        console.log('Restored scroll position:', scrollPosition.value)
+      }
+    })
+  }
+})
+
+onDeactivated(() => {
+  console.log('CategoryView deactivated, saving scroll position:', window.scrollY)
+  saveScrollPosition()
 })
 
 watch(curTypeId,

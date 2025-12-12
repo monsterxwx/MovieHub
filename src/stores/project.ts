@@ -3,12 +3,18 @@ import { defineStore } from 'pinia'
 const useProjectStore = defineStore({
   id: 'project',
   state: () => ({
-    projectId: ''
+    projectId: '',
+    menuList: []
   }),
   actions: {
 
   },
-  persist: true
+  persist: {
+    enabled: true,
+    strategies: [{
+      storage: window.sessionStorage
+    }]
+  }
 })
 
 export default useProjectStore
