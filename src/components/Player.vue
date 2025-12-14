@@ -35,9 +35,7 @@ const initArtplayer = () => {
     isLive: false,
     muted: false,
     autoplay: false,
-    pip: false, // 画中画
     autoSize: true,
-    autoMini: true,
     screenshot: true, // 截图功能
     setting: true, // 设置面板
     loop: false,
@@ -47,7 +45,6 @@ const initArtplayer = () => {
     fullscreen: true, // 全屏
     fullscreenWeb: true, // 网页全屏
     subtitleOffset: true,
-    miniProgressBar: true,
     mutex: true,
     backdrop: true,
     playsInline: true,
