@@ -35,7 +35,7 @@ const initArtplayer = () => {
     isLive: false,
     muted: false,
     autoplay: false,
-    pip: true, // 画中画
+    pip: false, // 画中画
     autoSize: true,
     autoMini: true,
     screenshot: true, // 截图功能
