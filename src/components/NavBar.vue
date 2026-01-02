@@ -1,7 +1,7 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
-import { Search, Clapperboard, Menu, X } from 'lucide-vue-next' // 引入 Menu 和 X 图标
-import { ref, watch } from 'vue'
+import { Search, Clapperboard, Menu, X, Clock } from 'lucide-vue-next' // 引入 Menu 和 X 图标
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import useProjectStore from '@/stores/project'
 
 const router = useRouter()
@@ -34,6 +34,73 @@ fetchCategories()
 // 状态：移动端菜单是否打开
 const isMobileMenuOpen = ref(false)
 const searchKeyword = ref('')
+const searchHistory = ref([]) // 搜索历史记录
+const showHistory = ref(false) // 是否显示历史记录
+const showMobileHistory = ref(false) // 是否显示移动端历史记录
+
+// 为搜索框和历史记录容器添加ref
+const searchContainer = ref(null)
+const mobileSearchContainer = ref(null)
+
+// 从本地存储加载搜索历史
+const loadSearchHistory = () => {
+  const history = localStorage.getItem('searchHistory')
+  if (history) {
+    searchHistory.value = JSON.parse(history)
+  }
+}
+
+// 保存搜索历史到本地存储
+const saveSearchHistory = () => {
+  localStorage.setItem('searchHistory', JSON.stringify(searchHistory.value))
+}
+
+// 添加搜索关键词到历史记录
+const addToHistory = (keyword) => {
+  if (!keyword.trim()) return
+
+  // 移除重复的关键词
+  const index = searchHistory.value.indexOf(keyword)
+  if (index > -1) {
+    searchHistory.value.splice(index, 1)
+  }
+
+  // 添加到历史记录开头
+  searchHistory.value.unshift(keyword)
+
+  // 限制历史记录数量
+  if (searchHistory.value.length > 10) {
+    searchHistory.value = searchHistory.value.slice(0, 10)
+  }
+
+  saveSearchHistory()
+}
+
+// 清空搜索历史
+const clearHistory = () => {
+  searchHistory.value = []
+  saveSearchHistory()
+}
+
+// 删除单个历史记录
+const removeFromHistory = (keyword) => {
+  const index = searchHistory.value.indexOf(keyword)
+  if (index > -1) {
+    searchHistory.value.splice(index, 1)
+    saveSearchHistory()
+  }
+}
+
+// 点击历史记录执行搜索
+const searchFromHistory = (keyword, isMobile = false) => {
+  searchKeyword.value = keyword
+  handleSearch()
+  if (isMobile) {
+    showMobileHistory.value = false
+  } else {
+    showHistory.value = false
+  }
+}
 
 // 切换移动端菜单
 const toggleMobileMenu = () => {
@@ -45,6 +112,11 @@ const handleSearch = () => {
   if (!searchKeyword.value.trim()) return
   router.push({ path: '/search', query: { q: searchKeyword.value } })
   isMobileMenuOpen.value = false // 搜索后关闭菜单
+  showHistory.value = false // 搜索后关闭历史记录
+  showMobileHistory.value = false // 搜索后关闭移动端历史记录
+
+  // 添加到搜索历史
+  addToHistory(searchKeyword.value)
 }
 
 const gobackHome = () => {
@@ -64,6 +136,32 @@ const isActive = (path) => {
   if (path === '/') return route.path === '/'
   return route.path.startsWith(path)
 }
+
+// 组件挂载时加载搜索历史
+loadSearchHistory()
+
+// 点击外部关闭搜索历史记录
+onMounted(() => {
+  const handleClickOutside = (event) => {
+    // 关闭PC端搜索历史
+    if (showHistory.value && searchContainer.value && !searchContainer.value.contains(event.target)) {
+      showHistory.value = false
+    }
+
+    // 关闭移动端搜索历史
+    if (showMobileHistory.value && mobileSearchContainer.value && !mobileSearchContainer.value.contains(event.target)) {
+      showMobileHistory.value = false
+    }
+  }
+
+  // 添加全局点击事件监听
+  document.addEventListener('click', handleClickOutside)
+
+  // 组件卸载时移除监听
+  onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside)
+  })
+})
 
 // 监听路由变化，自动关闭移动端菜单（防止跳转后菜单还开着）
 watch(() => route.path, () => {
@@ -103,15 +201,50 @@ watch(() => route.path, () => {
 
       <!-- 3. PC端 右侧工具 (搜索框) -->
       <div class="hidden md:flex items-center gap-4">
-        <div class="relative group">
+        <div ref="searchContainer" class="relative group">
           <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 transition-colors group-focus-within:text-purple-400" />
           <input
             v-model="searchKeyword"
             @keyup.enter="handleSearch"
+            @focus="showHistory = true"
             type="text"
             placeholder="搜索影片..."
             class="h-9 w-64 rounded-full border border-white/10 bg-white/5 pl-10 pr-4 text-sm text-gray-200 transition-all duration-300 focus:w-72 focus:border-purple-500/50 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500/20 placeholder-gray-600"
           >
+
+          <!-- PC端搜索历史记录 -->
+          <div v-if="showHistory && searchHistory.length > 0" class="absolute left-0 right-0 mt-2 bg-[#15161c] rounded-xl shadow-2xl overflow-hidden z-10">
+            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+              <div class="flex items-center gap-2 text-gray-400">
+                <Clock class="w-4 h-4" />
+                <span class="text-sm font-medium">搜索历史</span>
+              </div>
+              <button @click="clearHistory" class="text-xs font-medium text-gray-400 hover:text-purple-400 transition-all duration-300 px-2 py-1 rounded-full bg-[#1a1b23] hover:bg-gray-700">
+                清空
+              </button>
+            </div>
+            <div class="max-h-60 overflow-y-auto">
+              <div
+                v-for="(item, index) in searchHistory"
+                :key="index"
+                class="flex items-center justify-between px-4 py-3 hover:bg-gray-800/50 transition-colors cursor-pointer group"
+                @click="searchFromHistory(item)"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="text-gray-500 group-hover:text-purple-400 transition-colors">
+                    <Clock class="w-4 h-4" />
+                  </div>
+                  <span class="text-white text-sm">{{ item }}</span>
+                </div>
+                <button
+                  @click.stop="removeFromHistory(item)"
+                  class="flex items-center justify-center w-6 h-6 rounded-full bg-gray-800/50 text-gray-500 hover:bg-purple-400/20 hover:text-purple-400 transition-all duration-300 opacity-0 group-hover:opacity-100"
+                >
+                  <X class="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -154,15 +287,50 @@ watch(() => route.path, () => {
         class="md:hidden absolute top-16 left-0 right-0 bg-[#0f1014]/95 backdrop-blur-xl border-b border-white/5 px-4 py-6 shadow-2xl flex flex-col gap-6"
       >
         <!-- 移动端搜索框 -->
-        <div class="relative">
+        <div ref="mobileSearchContainer" class="relative">
           <Search class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
           <input
             v-model="searchKeyword"
             @keyup.enter="handleSearch"
+            @focus="showMobileHistory = true"
             type="text"
             placeholder="搜索影片..."
             class="h-12 w-full rounded-xl border border-white/10 bg-white/5 pl-12 pr-4 text-base text-white focus:border-purple-500 focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-purple-500"
           >
+
+          <!-- 移动端搜索历史记录 -->
+          <div v-if="showMobileHistory && searchHistory.length > 0" class="absolute left-0 right-0 mt-2 bg-[#15161c] rounded-xl shadow-2xl overflow-hidden z-10">
+            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+              <div class="flex items-center gap-2 text-gray-400">
+                <Clock class="w-4 h-4" />
+                <span class="text-sm font-medium">搜索历史</span>
+              </div>
+              <button @click="clearHistory" class="text-xs font-medium text-gray-400 hover:text-purple-400 transition-all duration-300 px-2 py-1 rounded-full bg-[#1a1b23] hover:bg-gray-700">
+                清空
+              </button>
+            </div>
+            <div class="max-h-60 overflow-y-auto">
+              <div
+                v-for="(item, index) in searchHistory"
+                :key="index"
+                class="flex items-center justify-between px-4 py-3 hover:bg-gray-800/50 transition-colors cursor-pointer group"
+                @click="searchFromHistory(item, true)"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="text-gray-500 group-hover:text-purple-400 transition-colors">
+                    <Clock class="w-4 h-4" />
+                  </div>
+                  <span class="text-white text-sm">{{ item }}</span>
+                </div>
+                <button
+                  @click.stop="removeFromHistory(item)"
+                  class="flex items-center justify-center w-6 h-6 rounded-full bg-gray-800/50 text-gray-500 hover:bg-purple-400/20 hover:text-purple-400 transition-all duration-300 opacity-0 group-hover:opacity-100"
+                >
+                  <X class="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 移动端导航链接 -->

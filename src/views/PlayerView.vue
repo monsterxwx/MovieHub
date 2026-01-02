@@ -21,6 +21,10 @@ const fetchVideoDetail = async () => {
   const res = await fetch(`/api/proxy?ac=detail&ids=${route.params.id}`)
   const data = await res.json()
   videoDetail.value = data?.list[0] || {}
+  // 修改页面标题为当前剧集名称
+  if (videoDetail.value.vod_name) {
+    document.title = `${videoDetail.value.vod_name} - 影视资源网`
+  }
   await nextTick()
   parsePlayUrl(videoDetail.value.vod_play_from, videoDetail.value.vod_play_url)
 }
@@ -114,6 +118,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (hls) hls.destroy()
+  // 恢复原页面标题
+  document.title = '影视资源网'
 })
 </script>
 

@@ -1,9 +1,9 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
 import VideoCard from '@/components/VideoCard.vue'
-import { Search, Frown, Sparkles, ChevronRight } from 'lucide-vue-next'
+import { Search, Frown, Sparkles, ChevronRight, Clock, X } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -12,6 +12,65 @@ const loading = ref(false)
 const list = ref([])
 const total = ref(0)
 const localKeyword = ref('') // 页面中间大搜索框的值
+const searchHistory = ref([]) // 搜索历史记录
+const showHistory = ref(false) // 是否显示历史记录
+const searchContainer = ref(null) // 搜索框容器ref
+
+// 从本地存储加载搜索历史
+const loadSearchHistory = () => {
+  const history = localStorage.getItem('searchHistory')
+  if (history) {
+    searchHistory.value = JSON.parse(history)
+  }
+}
+
+// 保存搜索历史到本地存储
+const saveSearchHistory = () => {
+  localStorage.setItem('searchHistory', JSON.stringify(searchHistory.value))
+}
+
+// 添加搜索关键词到历史记录
+const addToHistory = (keyword) => {
+  if (!keyword.trim()) return
+
+  // 移除重复的关键词
+  const index = searchHistory.value.indexOf(keyword)
+  if (index > -1) {
+    searchHistory.value.splice(index, 1)
+  }
+
+  // 添加到历史记录开头
+  searchHistory.value.unshift(keyword)
+
+  // 限制历史记录数量
+  if (searchHistory.value.length > 10) {
+    searchHistory.value = searchHistory.value.slice(0, 10)
+  }
+
+  saveSearchHistory()
+}
+
+// 清空搜索历史
+const clearHistory = () => {
+  searchHistory.value = []
+  saveSearchHistory()
+}
+
+// 删除单个历史记录
+const removeFromHistory = (keyword) => {
+  const index = searchHistory.value.indexOf(keyword)
+  if (index > -1) {
+    searchHistory.value.splice(index, 1)
+    saveSearchHistory()
+  }
+}
+
+// 点击历史记录执行搜索
+const searchFromHistory = (keyword) => {
+  localKeyword.value = keyword
+  handleLocalSearch()
+  showHistory.value = false
+}
 
 // 核心搜索逻辑
 const doSearch = async (keyword) => {
@@ -27,6 +86,9 @@ const doSearch = async (keyword) => {
 
     list.value = data.list || []
     total.value = data.total || 0
+
+    // 添加到搜索历史
+    addToHistory(keyword)
   } catch (e) {
     console.error('搜索失败', e)
     list.value = []
@@ -50,6 +112,26 @@ watch(
   },
   { immediate: true } // 初始化时立即执行一次
 )
+
+// 组件挂载时加载搜索历史
+onMounted(() => {
+  loadSearchHistory()
+
+  // 点击外部关闭搜索历史记录
+  const handleClickOutside = (event) => {
+    if (showHistory.value && searchContainer.value && !searchContainer.value.contains(event.target)) {
+      showHistory.value = false
+    }
+  }
+
+  // 添加全局点击事件监听
+  document.addEventListener('click', handleClickOutside)
+
+  // 组件卸载时移除监听
+  onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside)
+  })
+})
 </script>
 
 <template>
@@ -60,7 +142,7 @@ watch(
       <!-- 1. 搜索头部区域 -->
       <div class="flex flex-col items-center justify-center mb-12 space-y-6">
         <!-- 大搜索框 -->
-        <div class="relative w-full max-w-3xl group mx-auto">
+        <div ref="searchContainer" class="relative w-full max-w-3xl group mx-auto">
           <!-- 1. 动态光晕背景 (重点优化：聚焦时扩散并变亮) -->
           <div
             class="absolute -inset-0.5 rounded-full bg-gradient-to-r from-purple-600 via-blue-500 to-purple-600 opacity-30 blur-md transition-all duration-500 group-hover:opacity-60 group-focus-within:opacity-100 group-focus-within:blur-lg"
@@ -77,6 +159,7 @@ watch(
             <input
               v-model="localKeyword"
               @keyup.enter="handleLocalSearch"
+              @focus="showHistory = true"
               type="text"
               class="flex-1 bg-transparent border-none text-white text-lg h-12 px-2 focus:ring-0 placeholder-gray-600"
               placeholder="输入关键词，例如：复仇者联盟..."
@@ -102,6 +185,40 @@ watch(
             >
               <Search class="w-5 h-5" />
             </button>
+          </div>
+
+          <!-- 搜索历史记录 -->
+          <div v-if="showHistory && searchHistory.length > 0" class="absolute left-0 right-0 mt-2 bg-[#15161c] rounded-xl shadow-2xl overflow-hidden z-10">
+            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+              <div class="flex items-center gap-2 text-gray-400">
+                <Clock class="w-4 h-4" />
+                <span class="text-sm font-medium">搜索历史</span>
+              </div>
+              <button @click="clearHistory" class="text-xs font-medium text-gray-400 hover:text-purple-400 transition-all duration-300 px-2 py-1 rounded-full bg-[#1a1b23] hover:bg-gray-700">
+                清空
+              </button>
+            </div>
+            <div class="max-h-60 overflow-y-auto">
+              <div
+                v-for="(item, index) in searchHistory"
+                :key="index"
+                class="flex items-center justify-between px-4 py-3 hover:bg-gray-800/50 transition-colors cursor-pointer group"
+                @click="searchFromHistory(item)"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="text-gray-500 group-hover:text-purple-400 transition-colors">
+                    <Clock class="w-4 h-4" />
+                  </div>
+                  <span class="text-white text-sm">{{ item }}</span>
+                </div>
+                <button
+                  @click.stop="removeFromHistory(item)"
+                  class="flex items-center justify-center w-6 h-6 rounded-full bg-gray-800/50 text-gray-500 hover:bg-purple-400/20 hover:text-purple-400 transition-all duration-300 opacity-0 group-hover:opacity-100"
+                >
+                  <X class="w-3 h-3" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
