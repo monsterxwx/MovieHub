@@ -29,6 +29,11 @@ const router = createRouter({
       path: '/search',
       name: 'search',
       component: () => import('@/views/SearchView.vue')
+    },
+    {
+      path: '/history',
+      name: 'history',
+      component: () => import('@/views/HistoryView.vue')
     }
   ],
   // 移除自动滚动到顶部，由组件自己控制滚动位置

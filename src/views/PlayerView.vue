@@ -15,6 +15,50 @@ const currentEpisodeUrl = ref('') // 当前播放的URL
 const currentEpisodeName = ref('') // 当前播放的集数名称
 const videoPlayer = ref(null) // video DOM 引用
 let hls = null // Hls.js 实例
+let watchTimer = null // 15秒定时器
+
+// --- 保存观看历史 ---
+const saveWatchHistory = () => {
+  if (!videoDetail.value) return
+
+  const historyItem = {
+    id: route.params.id,
+    name: videoDetail.value.vod_name,
+    pic: videoDetail.value.vod_pic,
+    episode: currentEpisodeName.value,
+    time: new Date().toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  // 加载现有历史记录
+  const history = localStorage.getItem('watchHistory')
+  let historyList = []
+  if (history) {
+    historyList = JSON.parse(history)
+  }
+
+  // 移除重复项
+  const existingIndex = historyList.findIndex(item => item.id === historyItem.id)
+  if (existingIndex > -1) {
+    historyList.splice(existingIndex, 1)
+  }
+
+  // 添加到历史记录开头
+  historyList.unshift(historyItem)
+
+  // 限制历史记录数量
+  if (historyList.length > 50) {
+    historyList = historyList.slice(0, 50)
+  }
+
+  // 保存到本地存储
+  localStorage.setItem('watchHistory', JSON.stringify(historyList))
+}
 
 // --- 核心逻辑 1: 获取并解析数据 ---
 const fetchVideoDetail = async () => {
@@ -80,9 +124,29 @@ const parsePlayUrl = (playFrom, playUrl) => {
 
   playSources.value = result
 
-  // 默认自动播放：第一个源的第一集
+  // 默认自动播放：第一个源的第一集或历史记录中的集数
   if (result.length > 0 && result[0].episodes.length > 0) {
-    playEpisode(result[0].episodes[0].url, result[0].episodes[0].name)
+    // 检查是否有历史记录中的集数
+    const lastWatchedEpisode = route.query.episode
+    if (lastWatchedEpisode) {
+      // 在所有源中查找匹配的集数
+      let found = false
+      for (const source of result) {
+        const matchedEpisode = source.episodes.find(ep => ep.name === lastWatchedEpisode)
+        if (matchedEpisode) {
+          playEpisode(matchedEpisode.url, matchedEpisode.name)
+          found = true
+          break
+        }
+      }
+      // 如果没有找到匹配的集数，播放第一集
+      if (!found) {
+        playEpisode(result[0].episodes[0].url, result[0].episodes[0].name)
+      }
+    } else {
+      // 没有历史记录，播放第一集
+      playEpisode(result[0].episodes[0].url, result[0].episodes[0].name)
+    }
   }
 }
 
@@ -114,10 +178,17 @@ const currentEpisodesList = computed(() => {
 
 onMounted(() => {
   fetchVideoDetail()
+
+  // 设置15秒定时器，保存观看历史
+  watchTimer = setTimeout(() => {
+    saveWatchHistory()
+  }, 15000)
 })
 
 onBeforeUnmount(() => {
   if (hls) hls.destroy()
+  // 清除定时器
+  if (watchTimer) clearTimeout(watchTimer)
   // 恢复原页面标题
   document.title = '影视资源网'
 })

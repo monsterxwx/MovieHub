@@ -1,6 +1,6 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
-import { Search, Clapperboard, Menu, X, Clock } from 'lucide-vue-next' // 引入 Menu 和 X 图标
+import { Search, Clapperboard, Menu, X, Clock, User } from 'lucide-vue-next' // 引入 Menu 和 X 图标
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import useProjectStore from '@/stores/project'
 
@@ -124,6 +124,11 @@ const gobackHome = () => {
   isMobileMenuOpen.value = false
 }
 
+// 跳转个人观看历史页面
+const toHistoryView = () => {
+  router.push('/history')
+}
+
 const emit = defineEmits(['change'])
 
 const changeType = (path) => {
@@ -198,78 +203,83 @@ watch(() => route.path, () => {
           <span v-else class="absolute bottom-1.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-gray-500 opacity-0 transition-opacity group-hover:opacity-100" />
         </router-link>
       </div>
+      <div class="flex items-center gap-4">
+        <!-- 3. PC端 右侧工具 (搜索框) -->
+        <div class="hidden md:flex items-center gap-4">
+          <div ref="searchContainer" class="relative group">
+            <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 transition-colors group-focus-within:text-purple-400" />
+            <input
+              v-model="searchKeyword"
+              @keyup.enter="handleSearch"
+              @focus="showHistory = true"
+              type="text"
+              placeholder="搜索影片..."
+              class="h-9 w-64 rounded-full border border-white/10 bg-white/5 pl-10 pr-4 text-sm text-gray-200 transition-all duration-300 focus:w-72 focus:border-purple-500/50 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500/20 placeholder-gray-600"
+            >
 
-      <!-- 3. PC端 右侧工具 (搜索框) -->
-      <div class="hidden md:flex items-center gap-4">
-        <div ref="searchContainer" class="relative group">
-          <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 transition-colors group-focus-within:text-purple-400" />
-          <input
-            v-model="searchKeyword"
-            @keyup.enter="handleSearch"
-            @focus="showHistory = true"
-            type="text"
-            placeholder="搜索影片..."
-            class="h-9 w-64 rounded-full border border-white/10 bg-white/5 pl-10 pr-4 text-sm text-gray-200 transition-all duration-300 focus:w-72 focus:border-purple-500/50 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500/20 placeholder-gray-600"
-          >
-
-          <!-- PC端搜索历史记录 -->
-          <div v-if="showHistory && searchHistory.length > 0" class="absolute left-0 right-0 mt-2 bg-[#15161c] rounded-xl shadow-2xl overflow-hidden z-10">
-            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
-              <div class="flex items-center gap-2 text-gray-400">
-                <Clock class="w-4 h-4" />
-                <span class="text-sm font-medium">搜索历史</span>
-              </div>
-              <button @click="clearHistory" class="text-xs font-medium text-gray-400 hover:text-purple-400 transition-all duration-300 px-2 py-1 rounded-full bg-[#1a1b23] hover:bg-gray-700">
-                清空
-              </button>
-            </div>
-            <div class="max-h-60 overflow-y-auto">
-              <div
-                v-for="(item, index) in searchHistory"
-                :key="index"
-                class="flex items-center justify-between px-4 py-3 hover:bg-gray-800/50 transition-colors cursor-pointer group"
-                @click="searchFromHistory(item)"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="text-gray-500 group-hover:text-purple-400 transition-colors">
-                    <Clock class="w-4 h-4" />
-                  </div>
-                  <span class="text-white text-sm">{{ item }}</span>
+            <!-- PC端搜索历史记录 -->
+            <div v-if="showHistory && searchHistory.length > 0" class="absolute left-0 right-0 mt-2 bg-[#15161c] rounded-xl shadow-2xl overflow-hidden z-10">
+              <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+                <div class="flex items-center gap-2 text-gray-400">
+                  <Clock class="w-4 h-4" />
+                  <span class="text-sm font-medium">搜索历史</span>
                 </div>
-                <button
-                  @click.stop="removeFromHistory(item)"
-                  class="flex items-center justify-center w-6 h-6 rounded-full bg-gray-800/50 text-gray-500 hover:bg-purple-400/20 hover:text-purple-400 transition-all duration-300 opacity-0 group-hover:opacity-100"
-                >
-                  <X class="w-3 h-3" />
+                <button @click="clearHistory" class="text-xs font-medium text-gray-400 hover:text-purple-400 transition-all duration-300 px-2 py-1 rounded-full bg-[#1a1b23] hover:bg-gray-700">
+                  清空
                 </button>
+              </div>
+              <div class="max-h-60 overflow-y-auto">
+                <div
+                  v-for="(item, index) in searchHistory"
+                  :key="index"
+                  class="flex items-center justify-between px-4 py-3 hover:bg-gray-800/50 transition-colors cursor-pointer group"
+                  @click="searchFromHistory(item)"
+                >
+                  <div class="flex items-center gap-3">
+                    <div class="text-gray-500 group-hover:text-purple-400 transition-colors">
+                      <Clock class="w-4 h-4" />
+                    </div>
+                    <span class="text-white text-sm">{{ item }}</span>
+                  </div>
+                  <button
+                    @click.stop="removeFromHistory(item)"
+                    class="flex items-center justify-center w-6 h-6 rounded-full bg-gray-800/50 text-gray-500 hover:bg-purple-400/20 hover:text-purple-400 transition-all duration-300 opacity-0 group-hover:opacity-100"
+                  >
+                    <X class="w-3 h-3" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- 4. 移动端 汉堡菜单按钮 (小屏显示) -->
-      <div class="flex md:hidden items-center">
-        <button
-          @click="toggleMobileMenu"
-          class="group relative flex items-center justify-center w-10 h-10 rounded-xl border border-white/10 bg-white/5 text-gray-300 transition-all duration-200 hover:bg-white/10 hover:text-white hover:border-purple-500/30 active:scale-95"
-          :class="isMobileMenuOpen ? 'bg-purple-600/20 text-purple-400 border-purple-500/50' : ''"
-        >
-          <!-- 图标容器，为了加动画 -->
-          <div class="relative w-6 h-6">
-            <!-- 关闭图标 (当菜单打开时显示) -->
-            <X
-              class="absolute inset-0 w-6 h-6 transition-all duration-300 transform"
-              :class="isMobileMenuOpen ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-50'"
-            />
+        <!-- 4. 移动端 汉堡菜单按钮 (小屏显示) -->
+        <div class="flex md:hidden items-center">
+          <button
+            @click="toggleMobileMenu"
+            class="group relative flex items-center justify-center w-10 h-10 rounded-xl border border-white/10 bg-white/5 text-gray-300 transition-all duration-200 hover:bg-white/10 hover:text-white hover:border-purple-500/30 active:scale-95"
+            :class="isMobileMenuOpen ? 'bg-purple-600/20 text-purple-400 border-purple-500/50' : ''"
+          >
+            <!-- 图标容器，为了加动画 -->
+            <div class="relative w-6 h-6">
+              <!-- 关闭图标 (当菜单打开时显示) -->
+              <X
+                class="absolute inset-0 w-6 h-6 transition-all duration-300 transform"
+                :class="isMobileMenuOpen ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-50'"
+              />
 
-            <!-- 菜单图标 (当菜单关闭时显示) -->
-            <Menu
-              class="absolute inset-0 w-6 h-6 transition-all duration-300 transform"
-              :class="isMobileMenuOpen ? 'opacity-0 rotate-90 scale-50' : 'opacity-100 rotate-0 scale-100'"
-            />
-          </div>
-        </button>
+              <!-- 菜单图标 (当菜单关闭时显示) -->
+              <Menu
+                class="absolute inset-0 w-6 h-6 transition-all duration-300 transform"
+                :class="isMobileMenuOpen ? 'opacity-0 rotate-90 scale-50' : 'opacity-100 rotate-0 scale-100'"
+              />
+            </div>
+          </button>
+        </div>
+        <!-- 个人观看历史 -->
+        <div @click="toHistoryView" class="cursor-pointer flex items-center justify-center w-9 h-9 rounded-full bg-[#1a1b21] text-gray-400 hover:text-white hover:bg-[#25262c] transition-all duration-300">
+          <User class="w-5 h-5" />
+        </div>
       </div>
     </div>
 
