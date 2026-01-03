@@ -155,6 +155,9 @@ const playEpisode = (url, name) => {
   currentEpisodeUrl.value = url
   currentEpisodeName.value = name
 
+  // 切换集数时保存观看历史
+  saveWatchHistory()
+
   if (Hls.isSupported()) {
     if (hls) hls.destroy() // 切换前销毁旧实例
     hls = new Hls()
