@@ -162,7 +162,7 @@ onMounted(() => {
               @focus="showHistory = true"
               type="text"
               class="flex-1 bg-transparent border-none text-white text-lg h-12 px-2 focus:ring-0 placeholder-gray-600"
-              placeholder="输入关键词，例如：复仇者联盟..."
+              placeholder="输入关键词，如：复仇者"
             >
 
             <!-- 右侧分割线 (装饰) -->
@@ -179,12 +179,12 @@ onMounted(() => {
             </button>
 
             <!-- 移动端显示的简单按钮 -->
-            <button
+            <div
               @click="handleLocalSearch"
-              class="sm:hidden p-3 bg-purple-600 rounded-full text-white ml-2"
+              class="sm:hidden w-12 h-12 flex justify-center items-center absolute right-10px top-1/2 -translate-y-1/2 p-3 bg-purple-600 rounded-full text-white ml-2"
             >
               <Search class="w-5 h-5" />
-            </button>
+            </div>
           </div>
 
           <!-- 搜索历史记录 -->
